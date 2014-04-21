@@ -1,7 +1,7 @@
 var skynet = require('skynet');
 var config = require('../conf/config.json');
 
-var token = config.skynet.tocken;
+var token = config.skynet.token;
 var myId = config.skynet.uuid;
 
  var conn = skynet.createConnection({
