@@ -3,13 +3,16 @@ var chart = chartj[0];
 chart.width = window.innerWidth;
 chart.height = 400;
 var ctx = chart.getContext('2d');
-var initialStartTime = 1397968928187;
-var initialEndTime = 1397970112939;
+var initialStartTime = 1398047600000;
+var initialEndTime = Date.now();
 var currentStartTime, currentEndTime;
+var currentUrl;
 
 var color = [
+  "rgba(200, 127, 0, 0.5)",
+  null,
+  "rgba(127, 0, 55, 0.5)",
   "rgba(0, 127, 0, 0.5)",
-  "rgba(127, 0, 0, 0.5)",
   "rgba(0, 0, 127, 0.5)"
 ];
 
@@ -19,8 +22,14 @@ render = function (startTime, endTime) {
   currentEndTime = endTime = parseInt(endTime);
   var step = Math.ceil((endTime-startTime)/chart.width);
   var url = '/data.json?start=' + startTime + '&end=' + endTime + '&step=' + step;
+  currentUrl = url;
   
+  refreshData(url, startTime, endTime, step);
+}
+
+refreshData = function (url, startTime, endTime, step) {
   $.getJSON(url, function (data) {
+    if (url != currentUrl) { return; }
     var records;
     var max = [];
     var min = [];
@@ -38,7 +47,18 @@ render = function (startTime, endTime) {
       max[i] = _.max(_.pluck(metric, 'max'));
     });
     var diff = endTime-startTime;
-    _.each(metrics, function (metric, i) {
+    
+    var currentMetric = 0;
+    renderMetric = function () {
+      var metric = metrics[currentMetric];
+      var i = currentMetric;
+      if (!metric || url != currentUrl) {
+        return;
+      }
+      if (!color[currentMetric]) {
+        currentMetric++;
+        return renderMetric();
+      }
       var lastX = -1;
       var lastMinY = -1;
       var lastMaxY = -1;
@@ -89,26 +109,15 @@ render = function (startTime, endTime) {
         
         lastX = x;
       });
-    });
-    /** /
-    return;
-    _.each(data, function (item) {
-      var time = item.t;
-      _.each(item.d, function (metric, i) {
-        var diff = endTime-startTime;
-        var x = (time-startTime) / diff * chart.width;
-        var y;
-        var w = Math.ceil(step / diff * chart.width);
-        ctx.fillStyle = color[i];
-        y = chart.height - (metric.avg-min[i]) / (max[i]-min[i]) * chart.height;
-        ctx.fillRect(x, y-1, w, 3);
-        y = chart.height - (metric.min-min[i]) / (max[i]-min[i]) * chart.height;
-        ctx.fillRect(x, y-1, w, 1);
-        y = chart.height - (metric.max-min[i]) / (max[i]-min[i]) * chart.height;
-        ctx.fillRect(x, y-1, w, 1);
-      });
-    });
-    /**/
+            
+      if (currentMetric < metrics.length-1) {
+        currentMetric++;
+        setTimeout(function () {
+          renderMetric();
+        }, 1);
+      }
+    }
+    renderMetric();
   });
 }
 render(initialStartTime, initialEndTime);
