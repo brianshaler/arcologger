@@ -1,3 +1,5 @@
 node_modules
 node/sensortest/*
 conf/config.json
+node/sensordata/*
+sensordata/*
