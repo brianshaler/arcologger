@@ -46,6 +46,7 @@ refreshData = function (url, startTime, endTime, step) {
       min[i] = _.min(_.pluck(metric, 'min'));
       max[i] = _.max(_.pluck(metric, 'max'));
     });
+    
     var diff = endTime-startTime;
     
     var currentMetric = 0;
@@ -71,7 +72,9 @@ refreshData = function (url, startTime, endTime, step) {
         var w = Math.ceil(step / diff * chart.width);
         ctx.fillStyle = color[i];
         ctx.strokeStyle = color[i];
-        y = chart.height - (record.avg-min[i]) / (max[i]-min[i]) * chart.height;
+        
+        //y = chart.height - (record.avg-min[i]) / (max[i]-min[i]) * chart.height;
+        y = chart.height - record.avg / max[i] * chart.height;
         ctx.fillRect(x-w/2, y-1, w, 3);
         
         if (lastAvgY != -1) {
@@ -83,7 +86,8 @@ refreshData = function (url, startTime, endTime, step) {
         }
         lastAvgY = y;
         
-        y = chart.height - (record.min-min[i]) / (max[i]-min[i]) * chart.height;
+        //y = chart.height - (record.min-min[i]) / (max[i]-min[i]) * chart.height;
+        y = chart.height - record.min / max[i] * chart.height;
         ctx.fillRect(x-w/2, y-1, w, 1);
         
         if (lastMinY != -1) {
@@ -95,7 +99,8 @@ refreshData = function (url, startTime, endTime, step) {
         }
         lastMinY = y;
         
-        y = chart.height - (record.max-min[i]) / (max[i]-min[i]) * chart.height;
+        //y = chart.height - (record.max-min[i]) / (max[i]-min[i]) * chart.height;
+        y = chart.height - record.max / max[i] * chart.height;
         ctx.fillRect(x-w/2, y-1, w, 1);
         
         if (lastMaxY != -1) {
@@ -124,10 +129,10 @@ render(initialStartTime, initialEndTime);
 
 var p1 = -1, p2 = -1;
 chartj.on('mousedown', function (e) {
-  p1 = e.offsetX / chart.width;
+  p1 = e.clientX / chart.width;
 });
 chartj.on('mouseup', function (e) {
-  p2 = e.offsetX / chart.width;
+  p2 = e.clientX / chart.width;
   var diff = currentEndTime - currentStartTime;
   render(currentStartTime + diff*p1, currentStartTime + diff*p2);
   p1 = p2 = -1;
