@@ -2,5 +2,8 @@
     "skynet": {
         "token": "",
         "uuid": ""
+    },
+    "server": {
+        "port": 80
     }
 }

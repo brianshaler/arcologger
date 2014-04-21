@@ -2,6 +2,7 @@ var _ = require('lodash');
 var express = require('express');
 var levelup = require('levelup');
 var es = require('event-stream');
+var config = require('../conf/config.json');
 
 module.exports = function (db) {
   var count = 0;
@@ -101,7 +102,8 @@ module.exports = function (db) {
     });
   });
 
-  app.listen(3001);
+  app.listen(config.server.port);
+  console.log("listening on port", config.server.port);
   
   return app;
 }
