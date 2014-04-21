@@ -1,7 +1,7 @@
 var levelup = require('levelup');
 var es = require('event-stream');
 
-var db = levelup('./sensortest', {
+var db = levelup(__dirname+'/sensortest', {
   valueEncoding: 'json'
 });
 
