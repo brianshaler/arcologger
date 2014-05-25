@@ -73,12 +73,12 @@ float tmps2[3] = {0, 0, 0};
 
 float audioAvg = 0;
 
-//unsigned long last = 0;
+unsigned long last = 0;
 
 
 void setup()
 {
-  //Serial.begin(9600);
+  Serial.begin(9600);
   
   pinMode(power1, OUTPUT);
   digitalWrite(power1, HIGH);  
@@ -90,7 +90,7 @@ void setup()
   pinMode(gnd, OUTPUT);
   digitalWrite(gnd, LOW);
   
-  //Serial.begin(115200);
+  Serial.begin(115200);
   
   float initialSamples = 20;
   audioAvg = 0;
@@ -105,8 +105,8 @@ void loop() {
   /**/
   while (wifiStatus != WL_CONNECTED) 
   {
-    //Serial.print(F("Attempting to connect to WPA SSID: "));
-    //Serial.println(ssid);
+    Serial.print(F("Attempting to connect to WPA SSID: "));
+    Serial.println(ssid);
 
     wifiStatus = WiFi.begin(ssid); //begin WPA
     // status = WiFi.begin(ssid, keyIndex, key); //begin WEP
@@ -119,17 +119,17 @@ void loop() {
       skynetStatus = skynetclient.connect(hostname, port);
     } while (!skynetStatus);
     
-    //Serial.println(F("Connected!"));
+    Serial.println(F("Connected!"));
     
     char uuid[UUIDSIZE];
   
     skynetclient.getUuid(uuid);
-    //Serial.print(F("uuid: "));
-    //Serial.println(uuid);
+    Serial.print(F("uuid: "));
+    Serial.println(uuid);
     
     skynetclient.getToken(uuid);
-    //Serial.print(F("token: "));
-    //Serial.println(uuid);   
+    Serial.print(F("token: "));
+    Serial.println(uuid);   
   }
   /**/
   
@@ -142,7 +142,7 @@ void loop() {
   
   //Serial.print("Reads: ");
   //Serial.println(millis()-last);
-  //last = millis();
+  last = millis();
   
   wav = abs(vol-audioAvg) * 2;
   
@@ -154,7 +154,7 @@ void loop() {
   
   //Serial.print("Rolling avg: ");
   //Serial.println(millis()-last);
-  //last = millis();
+  last = millis();
   
   if (sampleCount == 0) {
     lums[1] = lums[2] = lum;
@@ -176,7 +176,7 @@ void loop() {
   }
   //Serial.print("Min/Max: ");
   //Serial.println(millis()-last);
-  //last = millis();
+  last = millis();
   
   
   sampleCount++;
@@ -188,23 +188,23 @@ void loop() {
     String tmpStr2 = "[" + String(int(tmps2[0])) + "," + String(int(tmps2[1])) + "," + String(int(tmps2[2])) + "]";
     String payload = "[" + lumStr + "," + volStr + "," + wavStr + "," + tmpStr1 + "," + tmpStr2 + "]";
     
-    //Serial.print("string building: ");
-    //Serial.println(millis()-last);
-    //last = millis();
+//    Serial.print("string building: ");
+//    Serial.println(millis()-last);
+    last = millis();
     
     
     char payloadChar[payload.length()+1];
     payload.toCharArray(payloadChar, payload.length()+1);
     
-    //Serial.print("string to char: ");
-    //Serial.println(millis()-last);
-    //last = millis();
+//    Serial.print("string to char: ");
+//    Serial.println(millis()-last);
+    last = millis();
     
     skynetclient.sendMessage(TOUUID, payloadChar);
-    //Serial.println(payload);
-    //Serial.println(payloadChar);
-    //Serial.println(audioAvg);
-    //Serial.println("[" + lumStr + "," + volStr + "," + tmpStr + "] " + String(sampleCount));
+//    Serial.println(payload);
+//    Serial.println(payloadChar);
+//    Serial.println(audioAvg);
+//    Serial.println("[" + lumStr + "," + volStr + "] " + String(sampleCount));
     
     audioAvg = (audioAvg * 4 + vols[0]) / 5;
     
@@ -214,4 +214,3 @@ void loop() {
     sampleCount = 0;
   }
 }
-
