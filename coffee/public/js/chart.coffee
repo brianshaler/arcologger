@@ -18,12 +18,10 @@ class Chart
     @currentEndTime = @initialEndTime
   
   update: (data) =>
-    console.log 'update!', data
     @data = data
     @render()
   
   render: (startTime = @currentStartTime, endTime = @currentEndTime) =>
-    console.log "Chart #{@name}: startTime", startTime, @currentStartTime, @initialStartTime, 'endTime', endTime
     @currentStartTime = startTime
     @currentEndTime = endTime
     ctx = @ctx
@@ -33,8 +31,6 @@ class Chart
     count = config.resolution
     step = 1000 * Math.pow 2, Math.ceil Math.log(durationSeconds / count) / Math.LN2
     
-    console.log 'ideal step', step
-    
     steps = _.map Object.keys(@data), (key) -> parseInt key
     steps = _.filter steps, (s) -> s >= step
     step = _.min steps
@@ -43,14 +39,12 @@ class Chart
     minT = startTime - step - duration
     maxT = endTime + step + duration
     
-    return console.log 'no steps' unless steps.length > 0
+    return unless steps.length > 0
     
-    console.log 'steps', steps
     counts = []
     for _step in steps
       _data = _.filter @data[_step], (point) -> minT <= point.t <= maxT
       counts.push [_step, _data.length]
-    console.log 'counts', counts
     
     counts = _.sortBy counts, (count) -> -count[1]
     step = counts[0][0]
@@ -59,12 +53,9 @@ class Chart
     data = @_data = @data[step]
     data = _.filter data, (point) -> point.d?.length > 0
     
-    console.log 'data', data, steps
     ctx.clearRect 0, 0, @width, @height
     
-    return console.log 'no data' unless data.length > 0
-    
-    #return console.log 'just returning'
+    return unless data.length > 0
     
     for metric in config.metrics
       ctx.strokeStyle = metric.color
@@ -85,8 +76,6 @@ class Chart
       points = _.filter points, (point) -> point?.v?.min?
       
       mins = _.map points, (point) ->
-        if !point.v?.min?
-          console.log '!point.v?.min?', point
         {
           t: point.t
           v: point.v.min

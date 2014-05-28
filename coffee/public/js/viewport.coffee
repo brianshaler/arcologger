@@ -30,7 +30,7 @@ class Viewport extends EventEmitter
     .on 'mouseleave', @endDrag
   
   update: (currentStartTime, currentEndTime) =>
-    return console.log 'unchanged' if @chart.currentStartTime == currentStartTime and @chart.currentEndTime == currentEndTime
+    return if @chart.currentStartTime == currentStartTime and @chart.currentEndTime == currentEndTime
     #console.log 'update viewport', @chart.initialStartTime, currentStartTime, currentEndTime
     @startTime = currentStartTime
     @endTime = currentEndTime
