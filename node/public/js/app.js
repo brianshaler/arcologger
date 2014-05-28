@@ -28,7 +28,6 @@
     }
 
     Chart.prototype.update = function(data) {
-      console.log('update!', data);
       this.data = data;
       return this.render();
     };
@@ -41,7 +40,6 @@
       if (endTime == null) {
         endTime = this.currentEndTime;
       }
-      console.log("Chart " + this.name + ": startTime", startTime, this.currentStartTime, this.initialStartTime, 'endTime', endTime);
       this.currentStartTime = startTime;
       this.currentEndTime = endTime;
       ctx = this.ctx;
@@ -49,7 +47,6 @@
       durationSeconds = (endTime - startTime) / 1000;
       count = config.resolution;
       step = 1000 * Math.pow(2, Math.ceil(Math.log(durationSeconds / count) / Math.LN2));
-      console.log('ideal step', step);
       steps = _.map(Object.keys(this.data), function(key) {
         return parseInt(key);
       });
@@ -61,9 +58,8 @@
       minT = startTime - step - duration;
       maxT = endTime + step + duration;
       if (!(steps.length > 0)) {
-        return console.log('no steps');
+        return;
       }
-      console.log('steps', steps);
       counts = [];
       for (_i = 0, _len = steps.length; _i < _len; _i++) {
         _step = steps[_i];
@@ -73,7 +69,6 @@
         });
         counts.push([_step, _data.length]);
       }
-      console.log('counts', counts);
       counts = _.sortBy(counts, function(count) {
         return -count[1];
       });
@@ -84,10 +79,9 @@
         var _ref;
         return ((_ref = point.d) != null ? _ref.length : void 0) > 0;
       });
-      console.log('data', data, steps);
       ctx.clearRect(0, 0, this.width, this.height);
       if (!(data.length > 0)) {
-        return console.log('no data');
+        return;
       }
       _ref = config.metrics;
       _results = [];
@@ -112,10 +106,6 @@
           return (point != null ? (_ref1 = point.v) != null ? _ref1.min : void 0 : void 0) != null;
         });
         mins = _.map(points, function(point) {
-          var _ref1;
-          if (((_ref1 = point.v) != null ? _ref1.min : void 0) == null) {
-            console.log('!point.v?.min?', point);
-          }
           return {
             t: point.t,
             v: point.v.min
@@ -321,10 +311,8 @@ module.exports={
       startTime -= duration * 0.3;
       endTime += duration * 0.3;
       url = "/data.json?start=" + startTime + "&end=" + endTime + "&step=" + step + "&cache=" + (step / 2);
-      console.log("DataProvider fetch", url);
       return $.getJSON(url, (function(_this) {
         return function(data) {
-          console.log('results', data.length);
           _.each(data, function(item) {
             var _ref, _ref1;
             if (!(((_ref = _this.data[step]) != null ? _ref.length : void 0) > 0)) {
@@ -341,7 +329,6 @@ module.exports={
 
     DataProvider.prototype.getNearest = function(time) {
       var items, sorted, step, _ref;
-      console.log('dataProvider: getNearest', time);
       sorted = [];
       _ref = this.data;
       for (step in _ref) {
@@ -352,7 +339,6 @@ module.exports={
           })[0]);
         }
       }
-      console.log('sorted:', sorted);
       if (!(sorted.length > 0)) {
         return null;
       }
@@ -398,11 +384,9 @@ module.exports={
 
   timeline.on('update', function() {
     var duration, endTime;
-    console.log('timeline.update');
     startTime = 1000 * Math.floor(timeline.currentStartTime / 1000);
     endTime = 1000 * Math.ceil(timeline.currentEndTime / 1000);
     duration = endTime - startTime;
-    console.log('duration', startTime, duration, endTime);
     dataProvider.get(startTime - duration * .1, endTime + duration * .1);
     return viewport.update(startTime, endTime);
   });
@@ -415,8 +399,7 @@ module.exports={
     dataProvider.get(startTime - duration * .1, endTime + duration * .1);
     timeline.currentStartTime = startTime;
     timeline.currentEndTime = endTime;
-    timeline.update();
-    return console.log('viewport startTime', startTime);
+    return timeline.update();
   });
 
   viewportLabel = new ChartLabel();
@@ -427,7 +410,6 @@ module.exports={
     var closest, endTime;
     startTime = viewport.startTime;
     endTime = viewport.endTime;
-    console.log("" + startTime + " + (" + x + " / " + (viewport.el.width()) + ") * (" + endTime + " - " + startTime + ")");
     closest = dataProvider.getNearest(startTime + (x / viewport.el.width()) * (endTime - startTime));
     if (!closest) {
       return viewportLabel.hide();
@@ -438,12 +420,10 @@ module.exports={
   });
 
   viewport.on('unhover', function(x) {
-    console.log('hide');
     return viewportLabel.hide();
   });
 
   dataProvider.on('update', function(data) {
-    console.log('dataProvider.update');
     timeline.chart.update(data);
     return viewport.chart.update(data);
   });
@@ -822,7 +802,7 @@ module.exports={
 
     Viewport.prototype.update = function(currentStartTime, currentEndTime) {
       if (this.chart.currentStartTime === currentStartTime && this.chart.currentEndTime === currentEndTime) {
-        return console.log('unchanged');
+        return;
       }
       this.startTime = currentStartTime;
       this.endTime = currentEndTime;
