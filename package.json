@@ -1,0 +1,43 @@
+{
+  "name": "arcologger",
+  "version": "0.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "byline": "~4.1.1",
+    "express": "~4.0.0",
+    "event-stream": "~3.1.2",
+    "jquery": "~2.1.0",
+    "level": "~0.18.0",
+    "leveldown": "~0.10.2",
+    "lodash": "~2.4.1",
+    "levelup": "~0.18.2",
+    "serialport": "~1.4.0",
+    "skynet": "~0.0.33",
+    "when": "~3.2.2"
+  },
+  "devDependencies": {
+    "gulp": "~3.6.1",
+    "gulp-browserify": "~0.5.0",
+    "gulp-rename": "~1.2.0",
+    "gulp-util": "~2.2.14",
+    "coffee-script": "~1.7.1",
+    "gulp-watch": "~0.6.2",
+    "gulp-plumber": "~0.6.1",
+    "gulp-coffee": "~1.4.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/brianshaler/arcologger.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brianshaler/arcologger/issues"
+  },
+  "homepage": "https://github.com/brianshaler/arcologger"
+}

@@ -1,0 +1,28 @@
+.highlight {
+  position: absolute;
+  border: solid 1px #666;
+  
+}
+.highlight-handle {
+  position: absolute;
+  border: solid 1px #666;
+  width: 1.2em;
+  height: 1.2em;
+  text-decoration: none;
+  border-radius: 1em;
+  text-align: center;
+  color: #fff;
+  background-color: rgba(55, 55, 55, 0.6);
+}
+
+.chart-label {
+  position: absolute;
+  left: 0px;
+  -x-background-color: rgba(55, 55, 55, 0.4);
+  color: #eee;
+  border-left: solid 1px rgba(22, 22, 22, 0.6);
+  pointer-events: none;
+}
+.chart-label-metric {
+  padding: 0.1em 0.5em;
+}

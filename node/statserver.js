@@ -1,109 +1,155 @@
-var _ = require('lodash');
-var express = require('express');
-var levelup = require('levelup');
-var es = require('event-stream');
-var config = require('../conf/config.json');
+(function() {
+  var Bucketer, Promise, StatServer, config, es, express, levelup, path, _;
 
-module.exports = function (db) {
-  var count = 0;
-  var minTime = -1;
-  var maxTime = -1;
-  db.createReadStream()
-  .pipe(es.map(function (data, callback) {
-    var t = parseInt(data.key);
-    minTime = minTime == -1 || t < minTime ? t : minTime;
-    maxTime = maxTime == -1 || t > maxTime ? t : maxTime;
-    count++;
-    callback();
-  })).on('end', function () {
-    console.log("Total: ", count, minTime, new Date(minTime), maxTime, new Date(maxTime));
-  });
+  _ = require('lodash');
 
+  path = require('path');
 
-  app = express();
+  express = require('express');
 
-  app.use(express.static(__dirname + '/public'));
+  levelup = require('levelup');
 
-  app.get('/data.:format?', function (req, res, next) {
-    var startTime = parseInt(req.query.start);
-    var endTime = parseInt(req.query.end);
-    var step = parseInt(req.query.step);
-    if (!(endTime > 0)) {
-      endTime = Date.now();
+  es = require('event-stream');
+
+  Promise = require('when');
+
+  config = require('../conf/config.json');
+
+  Bucketer = require('./bucketer');
+
+  StatServer = (function() {
+    function StatServer(db) {
+      this.db = db;
+      this.bucketer = Bucketer(this.db);
     }
-    if (!(startTime > 0)) {
-      startTime = 0;
-    }
-    var duration = endTime - startTime;
-    if (!(step > 0) || duration / step > 2000) {
-      console.log('bad step', req.query.step, duration, step);
-      step = Math.floor(duration / 1000);
-      if (step < 1000) { step = 1000; }
-    }
-    opt = {
-      start: ""+startTime,
-      end: ""+endTime
-    };
-    var currentTime = Math.floor(startTime/step)*step;
-    var bucket = [[],[],[],[],[]];
-  
-    summarizeBucket = function () {
-      if (bucket[0].length > 0) {
-        //var summary = [];
-        var summary = _.map(bucket, function (metric) {
-          //console.log('metric', metric);
-          return {
-            min: _.min(_.map(metric, function (item) { return item[1]; })),
-            max: _.max(_.map(metric, function (item) { return item[2]; })),
-            avg: _.reduce(metric, function (sum, item) { return sum + item[0]; }, 0)/metric.length
+
+    StatServer.prototype.start = function() {
+      var app;
+      app = express();
+      app.use(express["static"](__dirname + '/public'));
+      app.get('/test.json', (function(_this) {
+        return function(req, res, next) {
+          var opt, results;
+          opt = {
+            start: '2',
+            limit: 2
           };
-        });
-        return summary;
-      } else {
-        //console.log(bucket.length, bucket[0].length);
-      }
-    }
-  
-    //console.log(startTime, endTime, step);
-  
-    var results = [];
-    var count = 0;
-    res.setHeader('Content-Type', 'application/json');
-    db.createReadStream(opt)
-    .on('data', function (data) {
-      count++;
-      var time = parseInt(data.key);
-      if (time > currentTime + step) {
-        var summary = summarizeBucket();
-        if (summary) {
-          results.push({
-            t: currentTime,
-            d: summary
+          results = [];
+          return _this.db.createReadStream(opt).on('data', function(data) {
+            return results.push(data);
+          }).on('close', function() {
+            return res.send(results);
           });
-        }
-        currentTime = step + Math.floor(time/step)*step;
-        bucket = [[],[],[],[],[]];
-      }
-      _.each(data.value, function (record, i) {
-        if (count < 100) {
-          //console.log(time, i, typeof i, record);
-        }
-        bucket[i].push(record);
-      });
-    }).on('end', function () {
-      var summary = summarizeBucket();
-      if (summary) {
-        results.push({
-          t: currentTime,
-          d: summary
-        });
-      }
-      res.send(results);
-    });
-  });
+        };
+      })(this));
+      app.get('/data.:format?', (function(_this) {
+        return function(req, res, next) {
+          var cacheStep, duration, endTime, save, startTime, step;
+          startTime = parseInt(req.query.start);
+          endTime = parseInt(req.query.end);
+          step = parseInt(req.query.step);
+          cacheStep = parseInt(req.query.cache);
+          if (!(cacheStep > 0)) {
+            cacheStep = 0;
+          }
+          save = req.query.save === 'true' ? true : false;
+          if (!(endTime > 0)) {
+            endTime = Date.now();
+          }
+          if (!(startTime > 0)) {
+            startTime = 0;
+          }
+          duration = endTime - startTime;
 
-  app.listen(config.server.port);
-  console.log("listening on port", config.server.port);
-  
-  return app;
-}
+          /*
+          unless step > 0 and duration / step < 2000
+            console.log 'bad step', req.query.step, duration, step
+            step = Math.floor duration / 1000
+            step = 1000 if step < 1000
+           */
+          if (!(step > 0 && duration / step < 2000)) {
+            endTime = startTime + step * 2000;
+          }
+          res.setHeader('Content-Type', 'application/json');
+          return _this.bucketer.get(startTime, endTime, step, cacheStep, save).then(function(data) {
+            return res.send(data);
+          })["catch"](function(err) {
+            return res.send(err);
+          });
+        };
+      })(this));
+      app.get('/cache.:format?', (function(_this) {
+        return function(req, res, next) {
+          var days, deferred, maxTime, minTime, pow, promise, _fn, _i, _ref, _ref1;
+          deferred = Promise.defer();
+          promise = deferred.promise;
+          deferred.resolve();
+          days = parseInt(req.query.days);
+          if (!(days > 1)) {
+            days = 1;
+          }
+          maxTime = Date.now();
+          minTime = maxTime - 86400 * 1000 * days;
+          _fn = function(pow) {
+            var step;
+            step = 1000 * Math.pow(2, pow);
+            return promise = promise.then(function() {
+              var cacheStep;
+              cacheStep = null;
+              if (pow > _this.bucketer.MIN_BUCKET) {
+                cacheStep = step / 2;
+              }
+              return _this.bucketer.get(minTime, maxTime, step, cacheStep, true);
+            });
+          };
+          for (pow = _i = _ref = _this.bucketer.MIN_BUCKET, _ref1 = _this.bucketer.MAX_BUCKET; _i <= _ref1; pow = _i += 1) {
+            _fn(pow);
+          }
+          return promise.then(function() {
+            return res.send('done');
+          });
+        };
+      })(this));
+      app.get('/clean.:format?', (function(_this) {
+        return function(req, res, next) {
+          var first, last, opt, ws;
+          last = Date.now();
+          first = Date.now() - 86400 * 1000 * 365;
+          ws = _this.db.createWriteStream();
+          opt = {
+            end: "" + first
+          };
+          return _this.db.createReadStream(opt).on('data', function(data) {
+            return ws.write({
+              type: 'del',
+              key: data.key
+            });
+          }).on('close', function() {
+            opt = {
+              start: "" + last
+            };
+            return _this.db.createReadStream(opt).on('data', function(data) {
+              return ws.write({
+                type: 'del',
+                key: data.key
+              });
+            }).on('close', function() {
+              return res.send('done');
+            });
+          });
+        };
+      })(this));
+      app.listen(config.server.port);
+      console.log("listening on port", config.server.port);
+      return app;
+    };
+
+    return StatServer;
+
+  })();
+
+  module.exports = function(db) {
+    return new StatServer(db);
+  };
+
+}).call(this);

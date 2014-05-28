@@ -1,0 +1,20 @@
+{
+  "resolution": 600,
+  "metrics": [{
+    "index": 0,
+    "color": "rgba(200, 127, 0, 0.5)",
+    "name": "Light"
+  }, {
+    "index": 2,
+    "color": "rgba(127, 0, 55, 0.5)",
+    "name": "Noise"
+  }, {
+    "index": 3,
+    "color": "rgba(0, 127, 0, 0.5)",
+    "name": "Temperature 1"
+  }, {
+    "index": 4,
+    "color": "rgba(0, 0, 127, 0.5)",
+    "name": "Temperature 2"
+  }]
+}

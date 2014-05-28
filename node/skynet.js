@@ -8,7 +8,8 @@ var myId = config.skynet.uuid;
 module.exports = function (db) {
   var conn = skynet.createConnection({
     uuid: myId,
-    token: token
+    token: token,
+    protocol: 'websocket'
   });
 
   conn.on('notReady', function(data){
@@ -19,8 +20,19 @@ module.exports = function (db) {
   conn.on('ready', function(data){
     console.log('UUID AUTHENTICATED!');
     console.log(data);
-
-    conn.on('message', function(channel, message){
+    
+    conn.subscribe({
+      "uuid": "10fcc091-e39c-11e3-93f8-f3e7e8d1cce9"//,
+      //"token": "dvtkvr4hfr6enrk9o3516n8aaf7uv7vi"
+    }, function (data) {
+      console.log("subscribe data");
+      console.log(data);
+    });
+    
+    conn.on('message', function(){
+      console.log('on message');
+      console.log.apply(console, arguments);
+      return;
       var payloadText;
       var payload;
       if (message && message.payload) {
