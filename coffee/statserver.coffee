@@ -62,10 +62,6 @@ class StatServer
         res.send err
     
     app.get '/cache.:format?', (req, res, next) =>
-      deferred = Promise.defer()
-      promise = deferred.promise
-      deferred.resolve()
-      
       days = parseInt req.query.days
       days = 1 unless days > 1
       
@@ -102,7 +98,11 @@ class StatServer
     
     app
   
-  cache: (days, next) =>
+  cache: (days = 1, next) =>
+    deferred = Promise.defer()
+    promise = deferred.promise
+    deferred.resolve()
+    
     maxTime = Date.now()
     minTime = maxTime - 86400 * 1000 * days
     for pow in [@bucketer.MIN_BUCKET..@bucketer.MAX_BUCKET] by 1

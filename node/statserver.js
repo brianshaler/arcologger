@@ -1,5 +1,6 @@
 (function() {
-  var Bucketer, Promise, StatServer, config, es, express, levelup, path, _;
+  var Bucketer, Promise, StatServer, config, es, express, levelup, path, _,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   _ = require('lodash');
 
@@ -20,6 +21,8 @@
   StatServer = (function() {
     function StatServer(db) {
       this.db = db;
+      this.autoCache = __bind(this.autoCache, this);
+      this.cache = __bind(this.cache, this);
       this.bucketer = Bucketer(this.db);
     }
 
@@ -80,32 +83,12 @@
       })(this));
       app.get('/cache.:format?', (function(_this) {
         return function(req, res, next) {
-          var days, deferred, maxTime, minTime, pow, promise, _fn, _i, _ref, _ref1;
-          deferred = Promise.defer();
-          promise = deferred.promise;
-          deferred.resolve();
+          var days;
           days = parseInt(req.query.days);
           if (!(days > 1)) {
             days = 1;
           }
-          maxTime = Date.now();
-          minTime = maxTime - 86400 * 1000 * days;
-          _fn = function(pow) {
-            var step;
-            step = 1000 * Math.pow(2, pow);
-            return promise = promise.then(function() {
-              var cacheStep;
-              cacheStep = null;
-              if (pow > _this.bucketer.MIN_BUCKET) {
-                cacheStep = step / 2;
-              }
-              return _this.bucketer.get(minTime, maxTime, step, cacheStep, true);
-            });
-          };
-          for (pow = _i = _ref = _this.bucketer.MIN_BUCKET, _ref1 = _this.bucketer.MAX_BUCKET; _i <= _ref1; pow = _i += 1) {
-            _fn(pow);
-          }
-          return promise.then(function() {
+          return _this.cache(days, function(err) {
             return res.send('done');
           });
         };
@@ -142,6 +125,50 @@
       app.listen(config.server.port);
       console.log("listening on port", config.server.port);
       return app;
+    };
+
+    StatServer.prototype.cache = function(days, next) {
+      var deferred, maxTime, minTime, pow, promise, _fn, _i, _ref, _ref1;
+      if (days == null) {
+        days = 1;
+      }
+      deferred = Promise.defer();
+      promise = deferred.promise;
+      deferred.resolve();
+      maxTime = Date.now();
+      minTime = maxTime - 86400 * 1000 * days;
+      _fn = (function(_this) {
+        return function(pow) {
+          var step;
+          step = 1000 * Math.pow(2, pow);
+          return promise = promise.then(function() {
+            var cacheStep;
+            cacheStep = null;
+            if (pow > _this.bucketer.MIN_BUCKET) {
+              cacheStep = step / 2;
+            }
+            return _this.bucketer.get(minTime, maxTime, step, cacheStep, true);
+          });
+        };
+      })(this);
+      for (pow = _i = _ref = this.bucketer.MIN_BUCKET, _ref1 = this.bucketer.MAX_BUCKET; _i <= _ref1; pow = _i += 1) {
+        _fn(pow);
+      }
+      return promise.then(function() {
+        return next();
+      })["catch"](function(err) {
+        return next(err);
+      });
+    };
+
+    StatServer.prototype.autoCache = function() {
+      return this.cache(1, (function(_this) {
+        return function() {
+          return setTimeout(function() {
+            return _this.autoCache();
+          }, 60 * 1000);
+        };
+      })(this));
     };
 
     return StatServer;
