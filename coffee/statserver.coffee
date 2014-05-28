@@ -69,19 +69,9 @@ class StatServer
       days = parseInt req.query.days
       days = 1 unless days > 1
       
-      maxTime = Date.now()
-      minTime = maxTime - 86400 * 1000 * days
-      for pow in [@bucketer.MIN_BUCKET..@bucketer.MAX_BUCKET] by 1
-        do (pow) =>
-          step = 1000 * Math.pow 2, pow
-          promise = promise.then =>
-            cacheStep = null
-            if pow > @bucketer.MIN_BUCKET
-              cacheStep = step / 2
-            @bucketer.get minTime, maxTime, step, cacheStep, true
-      promise.then ->
+      @cache days, (err) =>
         res.send 'done'
-    
+      
     app.get '/clean.:format?', (req, res, next) =>
       last = Date.now()
       first = Date.now() - 86400 * 1000 * 365
@@ -109,8 +99,31 @@ class StatServer
     
     app.listen config.server.port
     console.log "listening on port", config.server.port
-
+    
     app
+  
+  cache: (days, next) =>
+    maxTime = Date.now()
+    minTime = maxTime - 86400 * 1000 * days
+    for pow in [@bucketer.MIN_BUCKET..@bucketer.MAX_BUCKET] by 1
+      do (pow) =>
+        step = 1000 * Math.pow 2, pow
+        promise = promise.then =>
+          cacheStep = null
+          if pow > @bucketer.MIN_BUCKET
+            cacheStep = step / 2
+          @bucketer.get minTime, maxTime, step, cacheStep, true
+    promise
+    .then ->
+      next()
+    .catch (err) ->
+      next err
+  
+  autoCache: =>
+    @cache 1, =>
+      setTimeout =>
+        @autoCache()
+      , 60 * 1000
 
 module.exports = (db) ->
   new StatServer db

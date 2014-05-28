@@ -12,6 +12,7 @@ var statServer = StatServer(db);
 var bucketer = Bucketer(db);
 
 statServer.start();
+statServer.autoCache();
 
 opt = {
   limit: 1,
