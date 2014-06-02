@@ -29,11 +29,13 @@ module.exports = function (db) {
       console.log(data);
     });
     
-    conn.on('message', function(){
+    conn.on('message', function (message){
       var payloadText;
       var payload;
       if (message && message.payload) {
         payloadText = message.payload;
+      } else {
+        console.log('no message?', arguments);
       }
       if (!payloadText && channel && channel.payload) {
         payloadText = channel.payload;
