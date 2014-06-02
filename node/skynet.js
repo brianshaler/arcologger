@@ -30,9 +30,6 @@ module.exports = function (db) {
     });
     
     conn.on('message', function(){
-      console.log('on message');
-      console.log.apply(console, arguments);
-      return;
       var payloadText;
       var payload;
       if (message && message.payload) {
