@@ -100,9 +100,9 @@ class StatServer
     app.post '/save.:format', (req, res, next) =>
       try
         payload = JSON.parse req.body.payload
-        #if payload
-        #  db.put "#{Date.now()}", payload
-        console.log 'payload', payload
+        if payload
+          db.put "#{Date.now()}", payload
+        #console.log 'payload', payload
       catch ex
         return next ex
       res.send '1'

@@ -133,7 +133,9 @@
           var ex, payload;
           try {
             payload = JSON.parse(req.body.payload);
-            console.log('payload', payload);
+            if (payload) {
+              db.put("" + (Date.now()), payload);
+            }
           } catch (_error) {
             ex = _error;
             return next(ex);
