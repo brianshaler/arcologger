@@ -102,7 +102,7 @@ class StatServer
         payload = JSON.parse req.body.payload
         if payload
           @db.put "#{Date.now()}", payload
-        #console.log 'payload', payload
+        console.log 'payload', payload
       catch ex
         return next ex
       res.send '1'

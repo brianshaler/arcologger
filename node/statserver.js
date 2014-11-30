@@ -136,6 +136,7 @@
             if (payload) {
               _this.db.put("" + (Date.now()), payload);
             }
+            console.log('payload', payload);
           } catch (_error) {
             ex = _error;
             return next(ex);
