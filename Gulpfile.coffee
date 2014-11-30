@@ -21,10 +21,10 @@ gulp.task 'coffee', ->
 
 gulp.task 'watch', ['client', 'coffee'], ->
   gulp.watch ['node/public/js/**/*.js', '!node/public/js/app.js'], ['client']
-  
+
   watch glob: 'coffee/**/*.coffee'
   .pipe plumber()
   .pipe coffee()
   .pipe gulp.dest 'node'
 
-gulp.task 'default', ['client']
+gulp.task 'default', ['coffee', 'client']
