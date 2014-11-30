@@ -14,7 +14,6 @@
     "levelup": "~0.18.2",
     "lodash": "~2.4.1",
     "serialport": "~1.4.0",
-    "skynet": "~0.0.33",
     "when": "~3.2.2"
   },
   "devDependencies": {

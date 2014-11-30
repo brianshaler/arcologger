@@ -98,15 +98,15 @@ class StatServer
           res.send 'done'
 
     app.post '/save.:format', (req, res, next) =>
+      payload = JSON.parse req.body.payload
       res.send req.body.payload
 
     app.post '/test.:format', (req, res, next) =>
+      payload = JSON.parse req.body.payload
       res.send req.body.payload
 
     app.listen config.server.port
     console.log "listening on port", config.server.port
-
-    app
 
   cache: (days = 1, next) =>
     deferred = Promise.defer()

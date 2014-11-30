@@ -1,5 +1,4 @@
 var levelup = require('levelup');
-var Skynet = require('./node/skynet');
 var StatServer = require('./node/statserver');
 var Bucketer = require('./node/bucketer');
 
@@ -7,7 +6,6 @@ var db = levelup(__dirname+'/sensordata', {
   valueEncoding: 'json'
 });
 
-var skynet = Skynet(db);
 var statServer = StatServer(db);
 var bucketer = Bucketer(db);
 
@@ -31,7 +29,7 @@ db.createReadStream(opt)
 })
 .on('end', function () {
   if (oldest) {
-    
+
   }
 });
 
