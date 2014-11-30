@@ -101,7 +101,7 @@ class StatServer
       try
         payload = JSON.parse req.body.payload
         if payload
-          db.put "#{Date.now()}", payload
+          @db.put "#{Date.now()}", payload
         #console.log 'payload', payload
       catch ex
         return next ex

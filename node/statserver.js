@@ -134,7 +134,7 @@
           try {
             payload = JSON.parse(req.body.payload);
             if (payload) {
-              db.put("" + (Date.now()), payload);
+              _this.db.put("" + (Date.now()), payload);
             }
           } catch (_error) {
             ex = _error;
