@@ -1,53 +1,11 @@
-/*
- *                SSSSS  kk                            tt
- *               SS      kk  kk yy   yy nn nnn    eee  tt
- *                SSSSS  kkkkk  yy   yy nnn  nn ee   e tttt
- *                    SS kk kk   yyyyyy nn   nn eeeee  tt
- *                SSSSS  kk  kk      yy nn   nn  eeeee  tttt
- *                               yyyyy
- *
- * SkynetClient for http://skynet.im, OPEN COMMUNICATIONS NETWORK & API FOR
- * THE INTERNET OF THINGS.
- *
- * Works with ethernet shields compatible with EthernetClient library from
- * Arduino. If you don't know, grab the original
- * http://arduino.cc/en/Main/ArduinoEthernetShield
- *
- * Also requires the ArduinoJsonParser 
- * https://github.com/bblanchon/ArduinoJsonParser 
- *
- * This sketch is VERY big both in program space and ram.
- *
- * You will notice we're using F() in Serial.print. It is covered briefly on
- * the arduino print page but it means we can store our strings in program
- * memory instead of in ram.
- *
- * You can turn on debugging within SkynetClient.h by uncommenting
- * #define SKYNETCLIENT_DEBUG but note this takes up a ton of program space
- * which means you'll probably have to debug on a Mega
- */
-
-#include <EEPROM.h>
 #include <WiFi.h>
 #include "SPI.h"
-#include "SkynetClient.h"
-#include <JsonParser.h>
-
-#define TOUUID "f32daf50-c83b-11e3-aa24-e1cb42c326cd"
 
 WiFiClient client;
 
-SkynetClient skynetclient(client);
-
 char ssid[] = "Arconet";     //  your network SSID (name)
 
-
-char hostname[] = "skynet.im";
-int port = 80;
-
 int wifiStatus = WL_IDLE_STATUS;
-
-
 
 int lightPin = A0;
 int micPin = A1;
@@ -112,28 +70,11 @@ void loop() {
     // status = WiFi.begin(ssid, keyIndex, key); //begin WEP
   }
 
-  while(!skynetclient.monitor())
-  {
-    bool skynetStatus = false;
-    do {
-      skynetStatus = skynetclient.connect(hostname, port);
-    } while (!skynetStatus);
-    
-    Serial.println(F("Connected!"));
-    
-    char uuid[UUIDSIZE];
-  
-    skynetclient.getUuid(uuid);
-    Serial.print(F("uuid: "));
-    Serial.println(uuid);
-    
-    skynetclient.getToken(uuid);
-    Serial.print(F("token: "));
-    Serial.println(uuid);   
-  }
-  /**/
-  
-  
+  while(!client.connected()){
+    client.stop();
+    client.connect("awesomegraphs.com", 80);
+  }  
+
   int lum = 1023 - analogRead(lightPin);
   int wav = analogRead(micPin);
   int vol = wav;
@@ -187,7 +128,8 @@ void loop() {
     String tmpStr1 = "[" + String(int(tmps1[0])) + "," + String(int(tmps1[1])) + "," + String(int(tmps1[2])) + "]";
     String tmpStr2 = "[" + String(int(tmps2[0])) + "," + String(int(tmps2[1])) + "," + String(int(tmps2[2])) + "]";
     String payload = "[" + lumStr + "," + volStr + "," + wavStr + "," + tmpStr1 + "," + tmpStr2 + "]";
-    
+    String tosend = "payload=" + payload;
+
 //    Serial.print("string building: ");
 //    Serial.println(millis()-last);
     last = millis();
@@ -200,8 +142,18 @@ void loop() {
 //    Serial.println(millis()-last);
     last = millis();
     
-    skynetclient.sendMessage(TOUUID, payloadChar);
-//    Serial.println(payload);
+    //curl -X POST -d 'payload=[[725,725,726],[492,492,493],[0,0,1],[482,482,483],[480,480,480]]' http://awesomegraphs.com/test.json    
+    client.println("POST /save.json HTTP/1.1");
+    client.println("Host: www.awesomegraphs.com");    
+    client.println("Content-type: application/x-www-form-urlencoded");
+    client.println("User-Agent: Arduino/1.0");
+    client.print("Content-length: ");
+    client.println(tosend.length());
+    client.println();
+    client.print(tosend);
+
+   Serial.println(payload);
+   Serial.println(freeRam());
 //    Serial.println(payloadChar);
 //    Serial.println(audioAvg);
 //    Serial.println("[" + lumStr + "," + volStr + "] " + String(sampleCount));
@@ -213,4 +165,10 @@ void loop() {
     lums[2] = vols[2] = wavs[2] = tmps1[2] = tmps2[2] = -1;
     sampleCount = 0;
   }
+}
+
+int freeRam () {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
