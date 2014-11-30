@@ -132,13 +132,14 @@
         return function(req, res, next) {
           var ex, payload;
           try {
+            console.log('payload', req.body.payload);
             payload = JSON.parse(req.body.payload);
             if (payload) {
               _this.db.put("" + (Date.now()), payload);
             }
-            console.log('payload', payload);
           } catch (_error) {
             ex = _error;
+            console.error(ex);
             return next(ex);
           }
           return res.send('1');
