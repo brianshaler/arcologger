@@ -138,7 +138,7 @@
             ex = _error;
             return next(ex);
           }
-          return res.send(1);
+          return res.send('1');
         };
       })(this));
       app.post('/test.:format', (function(_this) {

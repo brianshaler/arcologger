@@ -105,7 +105,7 @@ class StatServer
         console.log 'payload', payload
       catch ex
         return next ex
-      res.send 1
+      res.send '1'
 
     app.post '/test.:format', (req, res, next) =>
       payload = JSON.parse req.body.payload
