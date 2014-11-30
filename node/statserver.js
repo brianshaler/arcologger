@@ -1,5 +1,5 @@
 (function() {
-  var Bucketer, Promise, StatServer, config, es, express, levelup, path, _,
+  var Bucketer, Promise, StatServer, bodyParser, config, es, express, levelup, path, _,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   _ = require('lodash');
@@ -7,6 +7,8 @@
   path = require('path');
 
   express = require('express');
+
+  bodyParser = require('body-parser');
 
   levelup = require('levelup');
 
@@ -30,6 +32,10 @@
       var app;
       app = express();
       app.use(express["static"](__dirname + '/public'));
+      app.use(bodyParser.json());
+      app.use(bodyParser.urlencoded({
+        extended: true
+      }));
       app.get('/test.json', (function(_this) {
         return function(req, res, next) {
           var opt, results;
@@ -122,9 +128,29 @@
           });
         };
       })(this));
+      app.post('/save.:format', (function(_this) {
+        return function(req, res, next) {
+          var ex, payload;
+          try {
+            payload = JSON.parse(req.body.payload);
+            console.log('payload', payload);
+          } catch (_error) {
+            ex = _error;
+            return next(ex);
+          }
+          return res.send(1);
+        };
+      })(this));
+      app.post('/test.:format', (function(_this) {
+        return function(req, res, next) {
+          var payload;
+          payload = JSON.parse(req.body.payload);
+          console.log('payload test', payload);
+          return res.send(req.body.payload);
+        };
+      })(this));
       app.listen(config.server.port);
-      console.log("listening on port", config.server.port);
-      return app;
+      return console.log("listening on port", config.server.port);
     };
 
     StatServer.prototype.cache = function(days, next) {

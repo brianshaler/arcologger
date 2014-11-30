@@ -109,6 +109,7 @@ class StatServer
 
     app.post '/test.:format', (req, res, next) =>
       payload = JSON.parse req.body.payload
+      console.log 'payload test', payload
       res.send req.body.payload
 
     app.listen config.server.port
