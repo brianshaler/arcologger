@@ -4,14 +4,15 @@
   "description": "",
   "main": "server.js",
   "dependencies": {
+    "body-parser": "^1.9.3",
     "byline": "~4.1.1",
-    "express": "~4.0.0",
     "event-stream": "~3.1.2",
+    "express": "~4.0.0",
     "jquery": "~2.1.0",
     "level": "~0.18.0",
     "leveldown": "~0.10.2",
-    "lodash": "~2.4.1",
     "levelup": "~0.18.2",
+    "lodash": "~2.4.1",
     "serialport": "~1.4.0",
     "skynet": "~0.0.33",
     "when": "~3.2.2"
